@@ -15,10 +15,12 @@ class Dispatcher(object):
         skip=None,
         exit_on_failure=False,
         options=Namespace(),
+        plugins=None,
     ):
         self._log = Messenger()
         self._setup_context(base_directory, options)
-        self._load_plugins()
+        plugins = plugins or []
+        self._plugins = [plugin(self._context) for plugin in plugins]
         self._only = only
         self._skip = skip
         self._exit = exit_on_failure
@@ -60,8 +62,7 @@ class Dispatcher(object):
                             handled = True
                         except Exception as err:
                             self._log.error(
-                                "An error was encountered while executing action %s"
-                                % action
+                                "An error was encountered while executing action %s" % action
                             )
                             self._log.debug(err)
                             if self._exit:
@@ -77,9 +78,7 @@ class Dispatcher(object):
 
                 if action == "plugins":
                     # Create a list of loaded plugin names
-                    loaded_plugins = [
-                        plugin.__class__.__name__ for plugin in self._plugins
-                    ]
+                    loaded_plugins = [plugin.__class__.__name__ for plugin in self._plugins]
 
                     # Load plugins that haven't been loaded yet
                     for plugin in Plugin.__subclasses__():
@@ -87,9 +86,6 @@ class Dispatcher(object):
                             self._plugins.append(plugin(self._context))
 
         return success
-
-    def _load_plugins(self):
-        self._plugins = [plugin(self._context) for plugin in Plugin.__subclasses__()]
 
 
 class DispatchError(Exception):
