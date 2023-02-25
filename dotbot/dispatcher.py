@@ -2,7 +2,6 @@ import os
 from argparse import Namespace
 
 from .context import Context
-from .plugin import Plugin
 from .messenger import Messenger
 from .plugin import Plugin
 
